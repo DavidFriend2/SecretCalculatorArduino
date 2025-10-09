@@ -30,12 +30,14 @@ LiquidCrystal_I2C lcd(0x27, 16,  2);
  boolean result = false;
   
 void setup() {
+  lcd.backlight();
+  lcd.init();
   lcd.begin(16, 2); // Initialize the LCD with 16 columns and 2 rows //We are using a 16*2 LCD display
   lcd.print("Calculator  Ready"); //Display a intro message
   lcd.setCursor(0, 1);   // set the cursor  to column 0, line 1
   lcd.print("A=+ B=- C=* D=/"); //Display a intro message  
 
-   delay(6000); //Wait for display to show info
+   delay(3000); //Wait for display to show info
     lcd.clear(); //Then  clean it
 }
 
@@ -54,7 +56,7 @@ DisplayResult();
 
 void DetectButtons()
 { 
-     lcd.clear(); //Then clean it
+    lcd.clear(); //Then clean it
     if (key=='*') //If cancel Button is pressed
     {Serial.println ("Button  Cancel"); Number=Num1=Num2=0; result=false;}
     
@@ -185,8 +187,8 @@ void  DisplayResult()
   lcd.print(Num1); lcd.print(action); lcd.print(Num2); 
   
   if  (result==true)
-  {lcd.print(" ="); lcd.print(Number);} //Display the result
-  
+  //{lcd.print(" ="); lcd.print(Number);} //Display the result
+  lcd.print(" =");
   lcd.setCursor(0, 1);   // set the cursor to column 0, line 1
   lcd.print(Number);  //Display the result
 }
