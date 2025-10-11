@@ -1,6 +1,9 @@
 #include <LiquidCrystal_I2C.h> 
+#include <Tone.h>
 #include <Keypad.h> //Header file for  Keypad from https://github.com/Chris--A/Keypad
 
+const int SPEAKER_PIN = A0;
+Tone speaker;
 const byte ROWS = 4; // Four  rows
 const byte COLS = 4; // Four columns
 
@@ -30,6 +33,7 @@ LiquidCrystal_I2C lcd(0x27, 16,  2);
  boolean result = false;
   
 void setup() {
+  speaker.begin(SPEAKER_PIN); //Initialize the speaker pin
   lcd.backlight();
   lcd.init();
   lcd.begin(16, 2); // Initialize the LCD with 16 columns and 2 rows //We are using a 16*2 LCD display
@@ -37,131 +41,158 @@ void setup() {
   lcd.setCursor(0, 1);   // set the cursor  to column 0, line 1
   lcd.print("A=+ B=- C=* D=/"); //Display a intro message  
 
-   delay(3000); //Wait for display to show info
-    lcd.clear(); //Then  clean it
+  delay(3000); //Wait for display to show info
+  lcd.clear(); //Then  clean it
 }
 
 void loop() {
-  
-key = kpd.getKey(); //storing pressed  key value in a char
+  key = kpd.getKey(); //storing pressed  key value in a char
 
-if (key!=NO_KEY)
-DetectButtons();
+  if (key != NO_KEY) {
+    speaker.play(988,100); //Play a 85 note for 100 miliseconds
+    DetectButtons();
+  }
 
-if (result==true)
-CalculateResult();
+  if (result==true)
+    CalculateResult();
 
-DisplayResult();   
+  DisplayResult();   
 }
 
 void DetectButtons()
 { 
     lcd.clear(); //Then clean it
-    if (key=='*') //If cancel Button is pressed
-    {Serial.println ("Button  Cancel"); Number=Num1=Num2=0; result=false;}
-    
-     if (key == '1') //If  Button 1 is pressed
-    {Serial.println ("Button 1"); 
-    if (Number==0)
-    Number=1;
-    else
-    Number = (Number*10) + 1; //Pressed twice
+    if (key == '*') //If cancel Button is pressed
+    {
+      Serial.println ("Button  Cancel"); 
+      Number=Num1=Num2=0; 
+      result=false;
     }
     
-     if (key == '4') //If Button 4 is pressed
-    {Serial.println ("Button  4"); 
-    if (Number==0)
-    Number=4;
-    else
-    Number = (Number*10)  + 4; //Pressed twice
+    if (key == '1') //If  Button 1 is pressed
+    {
+      Serial.println ("Button 1"); 
+      if (Number==0)
+        Number=1;
+      else
+        Number = (Number*10) + 1; //Pressed twice
     }
     
-     if (key == '7') //If Button 7 is pressed
-    {Serial.println ("Button 7");
-    if (Number==0)
-    Number=7;
-    else
-    Number = (Number*10) + 7; //Pressed twice
+    if (key == '4') //If Button 4 is pressed
+    {
+      Serial.println ("Button  4"); 
+      if (Number==0)
+        Number=4;
+      else
+        Number = (Number*10)  + 4; //Pressed twice
+    }
+    
+    if (key == '7') //If Button 7 is pressed
+    {
+      Serial.println ("Button 7");
+      if (Number==0)
+        Number=7;
+      else
+        Number = (Number*10) + 7; //Pressed twice
     } 
-  
 
     if (key  == '0')
-    {Serial.println ("Button 0"); //Button 0 is Pressed
-    if (Number==0)
-    Number=0;
-    else
-    Number = (Number*10) + 0; //Pressed twice
+    {
+      Serial.println ("Button 0"); //Button 0 is Pressed
+      if (Number==0)
+        Number=0;
+      else
+        Number = (Number*10) + 0; //Pressed twice
     }
     
-     if (key == '2') //Button 2 is Pressed
-    {Serial.println ("Button  2"); 
-     if (Number==0)
-    Number=2;
-    else
-    Number = (Number*10)  + 2; //Pressed twice
+    if (key == '2') //Button 2 is Pressed
+    {
+      Serial.println ("Button  2"); 
+      if (Number==0)
+        Number=2;
+      else
+        Number = (Number*10)  + 2; //Pressed twice
     }
     
-     if (key == '5')
-    {Serial.println  ("Button 5"); 
-     if (Number==0)
-    Number=5;
-    else
-    Number  = (Number*10) + 5; //Pressed twice
+    if (key == '5')
+    {
+      Serial.println  ("Button 5"); 
+      if (Number==0)
+        Number=5;
+      else
+        Number  = (Number*10) + 5; //Pressed twice
     }
     
-     if (key == '8')
-    {Serial.println ("Button 8"); 
-     if (Number==0)
-    Number=8;
-    else
-    Number = (Number*10) + 8; //Pressed twice
+    if (key == '8')
+    {
+      Serial.println ("Button 8"); 
+      if (Number==0)
+        Number=8;
+      else
+        Number = (Number*10) + 8; //Pressed twice
     }   
   
 
     if (key == '#')
-    {Serial.println ("Button Equal"); 
-    Num2=Number;
-    result = true;
+    {
+      Serial.println ("Button Equal"); 
+      Num2=Number;
+      result = true;
     }
     
-     if (key == '3')
-    {Serial.println  ("Button 3"); 
-     if (Number==0)
-    Number=3;
-    else
-    Number  = (Number*10) + 3; //Pressed twice
+    if (key == '3')
+    {
+      Serial.println  ("Button 3"); 
+      if (Number==0)
+        Number=3;
+      else
+        Number  = (Number*10) + 3; //Pressed twice
     }
     
-     if (key == '6')
-    {Serial.println ("Button 6"); 
-    if (Number==0)
-    Number=6;
-    else
-    Number = (Number*10) + 6; //Pressed twice
+    if (key == '6')
+    {
+      Serial.println ("Button 6"); 
+      if (Number==0)
+        Number=6;
+      else
+      Number = (Number*10) + 6; //Pressed twice
     }
     
-     if  (key == '9')
-    {Serial.println ("Button 9");
-    if (Number==0)
-    Number=9;
-    else
-    Number = (Number*10) + 9; //Pressed twice
+    if  (key == '9')
+    {
+      Serial.println ("Button 9");
+      if (Number==0)
+        Number=9;
+      else
+        Number = (Number*10) + 9; //Pressed twice
     }  
 
-      if  (key == 'A' || key == 'B' || key == 'C' || key == 'D') //Detecting Buttons on Column  4
-  {
-    Num1 = Number;    
-    Number =0;
-    if (key == 'A')
-    {Serial.println ("Addition"); action = '+';}
-     if (key == 'B')
-    {Serial.println  ("Subtraction"); action = '-'; }
-     if (key == 'C')
-    {Serial.println  ("Multiplication"); action = '*';}
-     if (key == 'D')
-    {Serial.println  ("Division"); action = '/';}  
+    if  (key == 'A' || key == 'B' || key == 'C' || key == 'D') //Detecting Buttons on Column  4
+    {
+      Num1 = Number;    
+      Number = 0;
+      if (key == 'A')
+      {
+        Serial.println("Addition"); 
+        action = '+';
+      }
+      if (key == 'B')
+      {
+        Serial.println("Subtraction"); 
+        action = '-'; 
+      }
+      if (key == 'C')
+      {
+        Serial.println("Multiplication"); 
+        action = '*';
+      }
+      if (key == 'D')
+      {
+        Serial.println("Division");
+        action = '/';
+      }  
 
-    delay(100);
+      delay(100);
   }
   
 }
@@ -186,9 +217,10 @@ void  DisplayResult()
   lcd.setCursor(0, 0);   // set the cursor to column 0,  line 1
   lcd.print(Num1); lcd.print(action); lcd.print(Num2); 
   
-  if  (result==true)
-  //{lcd.print(" ="); lcd.print(Number);} //Display the result
-  lcd.print(" =");
-  lcd.setCursor(0, 1);   // set the cursor to column 0, line 1
-  lcd.print(Number);  //Display the result
+  if  (result==true) {
+    //{lcd.print(" ="); lcd.print(Number);} //Display the result
+    lcd.print(" =");
+    lcd.setCursor(0, 1);   // set the cursor to column 0, line 1
+    lcd.print(Number);  //Display the result
+  }
 }
