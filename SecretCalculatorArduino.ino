@@ -1,29 +1,161 @@
-// Include the library for the LCD
-#include <LiquidCrystal_I2C.h>
+#include <Tone.h>
+#include <LiquidCrystal_I2C.h> 
+#include <Keypad.h>
 
-// Initialize the library by telling it which Arduino pins are connected to the LCD
-// Format: LiquidCrystal(rs, en, d4, d5, d6, d7)
-//LiquidCrystal_I2C lcd(0x27, 16, 2);
+// --- Speaker Definition ---
+const int SPEAKER_PIN = A0;
+Tone speaker;
 
-/*void setup() {
-  // Set up the LCD's number of columns and rows
-  lcd.init();
+// --- Keypad Definitions ---
+const byte ROWS = 4;
+const byte COLS = 4;
+char keys[ROWS][COLS] = {
+  {'1','2','3','A'},
+  {'4','5','6','B'},
+  {'7','8','9','C'},
+  {'*','0','#','D'}
+};
+int song [] = {
+    NOTE_C4, NOTE_C4, NOTE_G4, NOTE_G4, NOTE_A4, NOTE_A4, NOTE_G4,
+        NOTE_F4, NOTE_F4, NOTE_E4, NOTE_E4, NOTE_D4, NOTE_D4, NOTE_C4
+};
+byte rowPins[ROWS] = { 0, 1, 2, 3 };
+byte colPins[COLS] = { 4, 5, 6, 7 }; 
+Keypad kpd = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+
+// --- LCD Definition ---
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+// --- Calculator Variables ---
+long Num1, Num2, Number;
+char key, action;
+boolean result = false;
+// NEW: A flag to know when an operator has been pressed
+boolean actionPressed = false; 
+
+void setup() {
+  speaker.begin(SPEAKER_PIN);
+  
   lcd.backlight();
-  lcd.setCursor(0,0);
+  lcd.init();
+  lcd.print("Calculator Ready");
+  lcd.setCursor(0, 1);
+  lcd.print("A=+ B=- C=* D=/"); 
+  delay(2000);
+  lcd.clear();
+}
 
-  // Print a message to the LCD.
-  lcd.print("Hello Dave!");
-  lcd.print("Dave!");
-  lcd.setCursor(5,1);
-  lcd.print("Dave!");
+void loop() {
+  key = kpd.getKey();
 
-}*/
+  if (key != NO_KEY) {
+    // Process the key press first
+    processKey(); 
+    // Then, update the display based on the new state
+    updateDisplay(); 
+  }
+}
 
-//void loop() {
-  // You can make the text scroll or change, but for now, we'll leave this empty.
-  // The message from setup() will stay on the screen.
+void playSong() {
+  int noteCount = sizeof(song) / sizeof(song[0]);
 
-  // Example of writing to the second line:
-  // lcd.setCursor(0, 1); // Move cursor to the first character of the second line
-  // lcd.print("Arduino is fun!");
-//}
+  for (int i = 0; i < noteCount; i++) {
+    // Play each note for 200 milliseconds
+    speaker.play(song[i], 200);
+    // Pause briefly between notes to make them distinct
+    delay(250);
+  }
+  speaker.stop();
+}
+
+// RENAMED and REWRITTEN from DetectButtons()
+void processKey() {
+    // If we just calculated a result, any new number should start a new calculation
+    if (result == true) {
+      if (key >= '0' && key <= '9') {
+        clearAll();
+      }
+    }
+
+    // --- Number Keys ---
+    if (key >= '0' && key <= '9') {
+      // Convert char '1' to long 1, etc.
+      Number = (Number * 10) + (key - '0'); 
+    }
+
+    // --- Operator Keys (A, B, C, D) ---
+    if (key == 'A' || key == 'B' || key == 'C' || key == 'D') {
+      Num1 = Number;
+      Number = 0;
+      actionPressed = true;
+      result = false; // Make sure we are not in the result state anymore
+      if (key == 'A') action = '+';
+      if (key == 'B') action = '-';
+      if (key == 'C') action = '*';
+      if (key == 'D') action = '/';
+    }
+
+    // --- Equals Key ---
+    if (key == '#') {
+      Num2 = Number;
+      result = true;
+      CalculateResult();
+    }
+    
+    // --- Clear Key ---
+    if (key == '*') {
+      clearAll();
+    }
+}
+
+// This function now holds the final calculation logic
+void CalculateResult() {
+  if (action == '+') Number = Num1 + Num2;
+  if (action == '-') Number = Num1 - Num2;
+  if (action == '*') Number = Num1 * Num2;
+  // Add a check to prevent division by zero
+  if (action == '/') {
+    if (Num2 == 0) {
+      Number = 0; // Or display an error
+    } else {
+      Number = Num1 / Num2;
+    }
+  }
+}
+
+// NEW: This is a dedicated function to reset everything
+void clearAll() {
+  Num1 = 0;
+  Num2 = 0;
+  Number = 0;
+  action = ' ';
+  result = false;
+  actionPressed = false;
+}
+
+
+// NEW: This single function handles all screen writing
+void updateDisplay() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+
+  if (result) {
+    // Show the full equation and result
+    lcd.print(Num1);
+    lcd.print(action);
+    lcd.print(Num2);
+    lcd.print("=");
+    lcd.setCursor(0, 1);
+    lcd.print(Number);
+    playSong();
+  } else if (actionPressed) {
+    // Show the first number and the operator
+    lcd.print(Num1);
+    lcd.print(action);
+    // And show the second number as it's being typed
+    lcd.print(Number);
+  } else {
+    // No operator yet, just show the first number being typed
+    lcd.print(Number);
+  }
+}

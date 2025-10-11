@@ -25,6 +25,18 @@ byte  colPins[COLS] = { 4, 5, 6, 7 }; // Connect keypad COL0, COL1 and COL2 to t
 
 Keypad kpd = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS  ); //  Create the Keypad
 
+
+int song [] = {
+    NOTE_C4, NOTE_C4, NOTE_G4, NOTE_G4, NOTE_A4, NOTE_A4, NOTE_G4,
+        NOTE_F4, NOTE_F4, NOTE_E4, NOTE_E4, NOTE_D4, NOTE_D4, NOTE_C4,
+        NOTE_G4, NOTE_G4, NOTE_F4, NOTE_F4, NOTE_E4, NOTE_E4, NOTE_D4,
+        NOTE_G4, NOTE_G4, NOTE_F4, NOTE_F4, NOTE_E4, NOTE_E4, NOTE_D4,
+        NOTE_C5, NOTE_C5, NOTE_G4, NOTE_G4, NOTE_A4, NOTE_A4, NOTE_G4,
+        NOTE_F4, NOTE_F4, NOTE_E4, NOTE_E4, NOTE_D4, NOTE_D4, NOTE_C4,
+        NOTE_G4, NOTE_G4, NOTE_C5, NOTE_C5, NOTE_B4, NOTE_B4, NOTE_A4,
+        NOTE_G4, NOTE_F4, NOTE_E4, NOTE_D4, NOTE_C4
+};
+
 const int rs = 8, en = 9, d4 = 10, d5 = 11, d6 =  12, d7 = 13; //Pins to which LCD is connected
 LiquidCrystal_I2C lcd(0x27, 16,  2);
 
@@ -46,12 +58,12 @@ void setup() {
 }
 
 void loop() {
-  key = kpd.getKey(); //storing pressed  key value in a char
 
-  if (key != NO_KEY) {
-    speaker.play(988,100); //Play a 85 note for 100 miliseconds
+    // After the loop finishes, stop any lingering sound.
+    //speaker.play(song,100); //Play a 85 note for 100 miliseconds
+  key = kpd.getKey();
+  if (key != NO_KEY)
     DetectButtons();
-  }
 
   if (result==true)
     CalculateResult();
@@ -221,6 +233,15 @@ void  DisplayResult()
     //{lcd.print(" ="); lcd.print(Number);} //Display the result
     lcd.print(" =");
     lcd.setCursor(0, 1);   // set the cursor to column 0, line 1
+    /*int noteCount = sizeof(song) / sizeof(song[0]);
     lcd.print(Number);  //Display the result
+    for (int i = 0; i < noteCount; i++) {
+      // Play the current note for 100 milliseconds
+      speaker.play(song[i], 100);
+
+      // 2. ADDED: A delay to let the note actually play before moving on.
+      // A slightly longer delay than the note duration helps separate the notes.
+      delay(130);
+    }
   }
 }
