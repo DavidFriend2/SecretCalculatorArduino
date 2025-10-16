@@ -1,30 +1,13 @@
 #include <Tone.h>
 #include <LiquidCrystal_I2C.h> 
 #include <Keypad.h>
-
-// --- Speaker Definition ---
-const int SPEAKER_PIN = A0;
-Tone speaker;
+#include "Hardware.h"
 
 // --- Keypad Definitions ---
-const byte ROWS = 4;
-const byte COLS = 4;
-char keys[ROWS][COLS] = {
-  {'1','2','3','A'},
-  {'4','5','6','B'},
-  {'7','8','9','C'},
-  {'*','0','#','D'}
-};
 int song [] = {
     NOTE_C4, NOTE_C4, NOTE_G4, NOTE_G4, NOTE_A4, NOTE_A4, NOTE_G4,
         NOTE_F4, NOTE_F4, NOTE_E4, NOTE_E4, NOTE_D4, NOTE_D4, NOTE_C4
 };
-byte rowPins[ROWS] = { 0, 1, 2, 3 };
-byte colPins[COLS] = { 4, 5, 6, 7 }; 
-Keypad kpd = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
-
-// --- LCD Definition ---
-LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 // --- Calculator Variables ---
 long Num1, Num2, Number;
@@ -34,15 +17,7 @@ boolean result = false;
 boolean actionPressed = false; 
 
 void setup() {
-  speaker.begin(SPEAKER_PIN);
-  
-  lcd.backlight();
-  lcd.init();
-  lcd.print("Calculator Ready");
-  lcd.setCursor(0, 1);
-  lcd.print("A=+ B=- C=* D=/"); 
-  delay(2000);
-  lcd.clear();
+  initializeHardware();
 }
 
 void loop() {
