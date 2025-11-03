@@ -1,15 +1,13 @@
 #include <Tone.h>
-#include <LiquidCrystal_I2C.h>
+#include <LiquidCrystal_I2C.h> 
 #include <Keypad.h>
 #include "Hardware.h"
 
-
 // --- Keypad Definitions ---
 int song [] = {
-   NOTE_C4, NOTE_C4, NOTE_G4, NOTE_G4, NOTE_A4, NOTE_A4, NOTE_G4,
-       NOTE_F4, NOTE_F4, NOTE_E4, NOTE_E4, NOTE_D4, NOTE_D4, NOTE_C4
+    NOTE_C4, NOTE_C4, NOTE_G4, NOTE_G4, NOTE_A4, NOTE_A4, NOTE_G4,
+        NOTE_F4, NOTE_F4, NOTE_E4, NOTE_E4, NOTE_D4, NOTE_D4, NOTE_C4
 };
-
 
 // --- Calculator Variables ---
 long Num1, Num2, Number;
@@ -17,32 +15,29 @@ char key, action;
 boolean result = false;
 // NEW: A flag to know when an operator has been pressed
 boolean actionPressed = false;
-int counter = 0;
-
+int counter = 0; 
 
 // Variables to switch between modes
 boolean isMusicMode = false;
 int musicModeCount = 0;
-
+int arr[100];
+int pos = 0;
+int bpm = 100;
 
 void musicMode();
 void processKey();
 void updateDisplay();
 
-
 void setup() {
   initializeHardware();
 }
 
-
 void loop() {
   key = kpd.getKey();
-
 
   if (key != NO_KEY) {
     // Check if '*' is pressed 3 times in a row
     handleStarPress();
-
 
     // Music Mode
     if (isMusicMode) {
@@ -55,10 +50,8 @@ void loop() {
   }
 }
 
-
 void playSong() {
   int noteCount = sizeof(song) / sizeof(song[0]);
-
 
   for (int i = 0; i < noteCount; i++) {
     // Play each note for 200 milliseconds
@@ -69,19 +62,16 @@ void playSong() {
   speaker.stop();
 }
 
-
 // RENAMED and REWRITTEN from DetectButtons()
 void processKey() {
   if (result == true && key >= '0' && key <= '9') {
     clearAll();
   }
 
-
   // --- Number Keys ---
   if (key >= '0' && key <= '9') {
     Number = (Number * 10) + (key - '0');
   }
-
 
   // --- Operator Keys ---
   if (key == 'A' || key == 'B' || key == 'C' || key == 'D') {
@@ -95,7 +85,6 @@ void processKey() {
     if (key == 'D') action = '/';
   }
 
-
   // --- Equals ---
   if (key == '#') {
     Num2 = Number;
@@ -103,13 +92,11 @@ void processKey() {
     CalculateResult();
   }
 
-
   // --- Clear ---
   if (key == '*') {
     clearAll();
   }
 }
-
 
 // This function now holds the final calculation logic
 void CalculateResult() {
@@ -126,21 +113,17 @@ void CalculateResult() {
   }
 }
 
-
 // Function to switch between music mode and calculator mode
 void handleStarPress() {
   if (key == '*') {
     musicModeCount++;
-
 
     // If user pressed '*' three times in a row, toggle between modes and reset counter
     if (musicModeCount >= 3) {
       isMusicMode = !isMusicMode;
       musicModeCount = 0;
 
-
       lcd.clear();
-
 
       if (isMusicMode) {
         counter = 0;
@@ -152,7 +135,6 @@ void handleStarPress() {
         lcd.print("MUSIC MODE OFF");
       }
 
-
       delay(1000);
       lcd.clear();
     }
@@ -163,50 +145,69 @@ void handleStarPress() {
   }
 }
 
-
 // Function to change the octaces based on the counter
-void musicChange(int note) {
+int musicChange(int note) {
   float new_note = note;
-
 
   // Statements to increase/decrease the octaves
   if (counter > 0) {
-    new_note = note * pow(1.05946, counter);
+    new_note = note * pow(2, counter);
   }
   else if (counter < 0) {
-    new_note = note / pow(1.05946, abs(counter));
+    new_note = note / pow(2, abs(counter));
   }
-
 
   speaker.stop();
   speaker.play((int)new_note, 200);
+  return (int)new_note;
 }
 
+void playMusic() {
+  int noteCount = sizeof(arr) / sizeof(arr[0]);
+
+  for (int i = 0; i < noteCount; i++) {
+    speaker.play(arr[i], bpm);
+    delay(250);
+  }
+
+  speaker.stop();
+}
+
+void add_To_Array(int note) {
+  arr[pos] = musicChange(note);
+  pos++;
+}
 
 // Function for music mode
 void musicMode() {
   // Statements to increase of decrease the octave
-  if (key == 'A' && counter < 12) {
+  if (key == 'A' && counter < 3) {
     counter++;
   }
-  if (key == 'B' && counter > -12) {
+  if (key == 'B' && counter > -3) {
     counter--;
   }
-
+  if (key == 'C') {
+    bpm += 10;
+  }
+  if (key == 'D') {
+    bpm -= 10;
+  }
 
   // Statements to make each number its own pitch
-  if (key == '1') musicChange(NOTE_C4);
-  if (key == '2') musicChange(NOTE_CS4);
-  if (key == '3') musicChange(NOTE_D4);
-  if (key == '4') musicChange(NOTE_DS4);
-  if (key == '5') musicChange(NOTE_E4);
-  if (key == '6') musicChange(NOTE_F4);
-  if (key == '7') musicChange(NOTE_FS4);
-  if (key == '8') musicChange(NOTE_G4);
-  if (key == '9') musicChange(NOTE_GS4);
-  if (key == '0') musicChange(NOTE_A4);
-}
+  if (key == '1') add_To_Array(musicChange(NOTE_C4));
+  if (key == '2') add_To_Array(musicChange(NOTE_CS4));
+  if (key == '3') add_To_Array(musicChange(NOTE_D4));
+  if (key == '4') add_To_Array(musicChange(NOTE_DS4));
+  if (key == '5') add_To_Array(musicChange(NOTE_E4));
+  if (key == '6') add_To_Array(musicChange(NOTE_F4));
+  if (key == '7') add_To_Array(musicChange(NOTE_FS4));
+  if (key == '8') add_To_Array(musicChange(NOTE_G4));
+  if (key == '9') add_To_Array(musicChange(NOTE_GS4));
+  if (key == '0') add_To_Array(musicChange(NOTE_A4));
 
+  if (key == '#') playMusic();
+}
 
 // NEW: This is a dedicated function to reset everything
 void clearAll() {
@@ -219,13 +220,10 @@ void clearAll() {
 }
 
 
-
-
 // NEW: This single function handles all screen writing
 void updateDisplay() {
   lcd.clear();
   lcd.setCursor(0, 0);
-
 
   if (result) {
     // Show the full equation and result
@@ -235,7 +233,7 @@ void updateDisplay() {
     lcd.print("=");
     lcd.setCursor(0, 1);
     lcd.print(Number);
-    playSong();
+    //playSong();
   } else if (actionPressed) {
     // Show the first number and the operator
     lcd.print(Num1);
