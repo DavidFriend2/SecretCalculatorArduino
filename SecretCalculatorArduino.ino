@@ -163,14 +163,21 @@ int musicChange(int note) {
 }
 
 void playMusic() {
-  int noteCount = sizeof(arr) / sizeof(arr[0]);
-
-  for (int i = 0; i < noteCount; i++) {
-    speaker.play(arr[i], bpm);
-    delay(250);
+  for (int i = 0; i < pos; i++) {
+    int note = arr[i];
+    if (note > 0) {
+      speaker.play(arr[i], bpm);
+      delay(250);
+    }
   }
 
   speaker.stop();
+
+  for (int j = 0; j < pos; j++) {
+    arr[j] = 0;
+  }
+
+  pos = 0;
 }
 
 void add_To_Array(int note) {
@@ -206,6 +213,10 @@ void musicMode() {
   if (key == '9') add_To_Array(musicChange(NOTE_GS4));
   if (key == '0') add_To_Array(musicChange(NOTE_A4));
 
+  if (key == '*') {
+    pos--;
+    arr[pos] = 0;
+  }
   if (key == '#') playMusic();
 }
 
